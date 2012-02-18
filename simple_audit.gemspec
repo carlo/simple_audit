@@ -5,12 +5,12 @@
 
 Gem::Specification.new do |s|
   s.name = %q{simple_audit}
-  s.version = "0.2.0"
+  s.version = "0.3.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Gabriel Tarnovan", "Mihai Tarnovan"]
   s.date = %q{2011-05-03}
-  s.description = %q{      Provides a straightforward way for auditing changes on active record models, especially for composite entities. 
+  s.description = %q{      Provides a straightforward way for auditing changes on active record models, especially for composite entities.
       Also provides helper methods for easily rendering an audit trail in Ruby on Rails views.
 }
   s.email = ["gabriel.tarnovan@cubus.ro", "mihai.tarnovan@cubus.ro"]

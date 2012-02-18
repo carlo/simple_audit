@@ -42,10 +42,12 @@ module SimpleAudit
       #      end
       #    end
       #
+      # If the data is blank, no audit entry is created.  So if your audit
+      # block returns any value that would result in a positive `blank?` check
+      # there won't be an `Audit` record.
 
       def simple_audit(options = {}, &block)
         class_eval do
-
           class_attribute :username_method
           self.username_method = (options[:username_method] || :name).to_sym
 
@@ -56,7 +58,9 @@ module SimpleAudit
             end
             changes
           end
+
           audit_changes_proc = block_given? ? block.to_proc : attributes_and_associations
+
           class_attribute :audit_changes
           self.audit_changes = audit_changes_proc
 
@@ -70,10 +74,14 @@ module SimpleAudit
 
       def audit(record, action = :update, user = nil) #:nodoc:
         user ||= User.current if User.respond_to?(:current)
+
+        change_log = self.audit_changes.call(record)
+        return if change_log.blank?
+
         record.audits.create(:user => user,
           :username => user.try(self.username_method),
           :action => action.to_s,
-          :change_log => self.audit_changes.call(record)
+          :change_log => change_log
         )
       end
     end

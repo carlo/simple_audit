@@ -73,7 +73,7 @@ module SimpleAudit
       end
 
       def audit(record, action = :update, user = nil) #:nodoc:
-        user ||= SimpleAudit::User.current_user if User.respond_to?(:current)
+        user ||= ::SimpleAudit::User.current_user
 
         change_log = self.audit_changes.call(record)
         return if change_log.blank?

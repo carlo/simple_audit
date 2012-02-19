@@ -1,3 +1,8 @@
+# Version 0.3.0 (Feb 19, 2012)
+* FIX: got rid of `class_inheritable_attribute` warnings in Rails 3 (pzupan)
+* ADD: don't create audit records for records with blank changelogs
+* ADD: set the user from anywhere via `SimpleAudit::User.current_user`
+
 # Version 0.2.0 (May 3, 2011)
 * audit belongs_to associations
 * fixed html safety of helper
@@ -8,7 +13,7 @@
 * Rails 3 compatibility
 * minor API changes break backwards compatibility
 * documented code
- 
+
 # Version 0.0.3 (June 6, 2010)
 * unit tests
 

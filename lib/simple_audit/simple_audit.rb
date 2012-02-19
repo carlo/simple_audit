@@ -10,12 +10,12 @@
 module SimpleAudit
 
   module Model
+
     def self.included(base) #:nodoc:
       base.send :extend, ClassMethods
     end
 
     module ClassMethods
-
       # == Configuration options
       #
       # * <tt>username_method => symbol</tt> - Call this method on the current user to get the name
@@ -73,7 +73,7 @@ module SimpleAudit
       end
 
       def audit(record, action = :update, user = nil) #:nodoc:
-        user ||= User.current if User.respond_to?(:current)
+        user ||= SimpleAudit::User.current_user if User.respond_to?(:current)
 
         change_log = self.audit_changes.call(record)
         return if change_log.blank?
@@ -87,4 +87,19 @@ module SimpleAudit
     end
 
   end
+
+
+  module User
+    def current_user
+      Thread.current[:simple_audit_user]
+    end
+
+    def current_user=(user)
+      Thread.current[:simple_audit_user] = user
+    end
+
+    module_function :current_user, :current_user=
+  end
+
+
 end

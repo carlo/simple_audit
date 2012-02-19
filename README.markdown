@@ -6,21 +6,25 @@ creating audit logs for complex model associations. Instead of storing audits
   * a helper method is provided to easily display the audit log
   * the Audit object provides a #delta method which computes the differences between two audits
 
-In a nutshell:
+In a nutshell: this is your model, Booking:
 
-    class Booking < ActiveRecord::Base
-      simple_audit do |record|
-        # data to be audited
-        {
-            :price => record.price,
-            :period => record.period,
-            ...
-        }
-      end
-    end
+```ruby
+# app/models/booking.rb
 
-    # in your view
-    <%= render_audits(@booking) %>
+class Booking < ActiveRecord::Base
+  simple_audit
+  …
+end
+```
+
+This is your view:
+
+```ruby
+# app/views/bookings/booking.html.erb
+…
+<%= render_audits(@booking) %>
+…
+```
 
 If the data is blank, no audit entry is created.  So if your `simple_audit`
 block returns any value that would result in a positive `blank?` check there
@@ -43,16 +47,16 @@ a clear audit trail.
 ![Screenshot of helper result](http://github.com/carlo/simple_audit/raw/master/screenshot.png)
 
 
-## Installation & Configuration
+## Installation & Configuration for Rails 3
 
-### Rails 3
     # in your Gemfile
     gem 'simple_audit'
 
     # then install
     bundle install
 
-#### Post installation
+### Post installation
+
     # generate & run migration
     rails generate simple_audit:migration
     rake db:migrate
@@ -63,56 +67,82 @@ a clear audit trail.
 Audit ActiveRecord models. Somewhere in your (backend) views show the audit
 logs.
 
-    # in your model
-    # app/models/booking.rb
+Your model, Booking:
 
-    class Booking < ActiveRecord::Base
-        simple_audit
-        ...
-    end
+```ruby
+# app/models/booking.rb
 
-    # in your view
-    # app/views/bookings/booking.html.erb
+class Booking < ActiveRecord::Base
+  simple_audit
+  …
+end
+```
 
-    ...
-    <%= render_audits(@booking) %>
-    ...
+Your view:
+
+```ruby
+# app/views/bookings/booking.html.erb
+…
+<%= render_audits(@booking) %>
+…
+```
+
+
+## Setup
+
+simple_audit needs to know who the current user is.  Set your current user
+model object as the simple_audit `current_user` before any CRUD operations are
+performed.  For example, in a Rails application you could add the following to
+your `app/controllers/application_controller.rb`
+
+```ruby
+class ApplicationController < ActionController::Base
+  before_filter :set_current_user
+
+  private
+
+  def set_current_user
+    SimpleAudit::User.current_user = @current_user
+  end
+end
+```
+
 
 ### Sample styling
-      .audits {
-      	clear: both;
-      }
-      .audit {
-      	-moz-border-radius:8px;
-        -webkit-border-radius: 8px;
-        background-color: #dfdfdf;
-        padding: 6px;
-        margin-bottom: 8px;
-      	font-size: 12px;
-      }
-      .audit .action, .audit .user, .audit .timestamp{
-      	float: left;
-      	margin-right: 6px;
-      }
-      .audit .changes {
-      	clear: both;
-      	white-space: pre;
-      }
 
-      .audit .current {
-      	margin-left: 6px;
-      }
-      .audit .previous {
-      	margin-left: 6px;
-      	text-decoration: line-through;
-      }
+```css
+.audits {
+	clear: both;
+}
 
+.audit {
+	-moz-border-radius:8px;
+  -webkit-border-radius: 8px;
+  background-color: #dfdfdf;
+  padding: 6px;
+  margin-bottom: 8px;
+	font-size: 12px;
+}
 
-## Assumptions and limitations
+.audit .action, .audit .user, .audit .timestamp{
+	float: left;
+	margin-right: 6px;
+}
 
-* Your user model is called `User` and the current user `User.current`.  See
-  [sentient_user](http://github.com/bokmann/sentient_user) for more
-  information.
+.audit .changes {
+	clear: both;
+	white-space: pre;
+}
+
+.audit .current {
+	margin-left: 6px;
+}
+
+.audit .previous {
+	margin-left: 6px;
+	text-decoration: line-through;
+}
+```
 
 
 ## Customize auditing
@@ -122,20 +152,22 @@ associations (their `id` and `to_s` on these) are saved in the `audits` table.
 You can customize the data which is saved by supplying a block which will
 return all relevant data for the audited model.
 
-    # app/models/booking.rb
+```ruby
+# app/models/booking.rb
 
-    class Booking < ActiveRecord::Base
-        simple_audit do |record|
-          {
-            :state  => record.state,
-            :price  => record.price.format,
-            :period => record.period.to_s,
-            :housing_units => record.housing_units.collect(&:name).join('; '),
-            ...
-            }
-        end
-        ...
-    end
+class Booking < ActiveRecord::Base
+  simple_audit do |record|
+    {
+      :state  => record.state,
+      :price  => record.price.format,
+      :period => record.period.to_s,
+      :housing_units => record.housing_units.collect(&:name).join('; '),
+      …
+      }
+  end
+  …
+end
+```
 
 If your `simple_audit` block returns any value that would result in a positive
 `blank?` check no `Audit` record for that particular change will be created.
@@ -143,8 +175,10 @@ If your `simple_audit` block returns any value that would result in a positive
 You can also customize the attribute of the `User` model which will be stored
 in the audit.
 
-    # default is :name
-    simple_audit :username_method => :email
+```ruby
+# default is :name
+simple_audit :username_method => :email
+```
 
 
 ## Rendering audit trail
@@ -169,4 +203,4 @@ Zottmann](https://github.com/carlo) and [pzupan](https://github.com/pzupan).
 
 * FIX: got rid of `class_inheritable_attribute` warnings in Rails 3 (pzupan)
 * ADD: don't create audit records for records with blank changelogs
-
+* ADD: set the user from anywhere via `SimpleAudit::User.current_user`
